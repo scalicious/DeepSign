@@ -1,0 +1,5 @@
+# Pool to Sea cross-domain configuration
+_base_: configs/base.yaml
+direction: pool2sea
+source_domain: pool
+target_domain: sea

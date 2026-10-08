@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+env/
+venv/
+ENV/
+
+# Data and Cache
+data/raw/
+cache/
+*.npy
+*.zip
+*.tar.gz
+
+# Results and logs
+results/runs/
+results/figs/
+results/tables/
+
+# IDE / OS
+.DS_Store
+.idea/
+.vscode/
