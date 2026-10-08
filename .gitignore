@@ -17,7 +17,6 @@ cache/
 *.tar.gz
 
 # Results and logs
-results/runs/
 results/figs/
 results/tables/
 
