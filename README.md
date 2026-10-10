@@ -1,1 +1,1 @@
-# caddy-underwater-diver-classification
+# underwater-diver-hand-gesture-classification
