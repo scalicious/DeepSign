@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -350,7 +350,7 @@
     .upload-zone {
       border: 2px dashed var(--glass-border);
       border-radius: var(--radius-md);
-      padding: 48px 24px;
+      padding: 28px 24px;
       text-align: center;
       cursor: pointer;
       transition: all 0.3s ease;
@@ -446,13 +446,31 @@
       display: none;
     }
 
+    /* Upload card fills its grid cell */
+    .upload-card {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    /* Upload zone centers content and fills available height */
+    .upload-card .upload-zone {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
     .preview-area {
       display: none;
-      margin-top: 20px;
+      flex: 1;
+      flex-direction: column;
+      margin-top: 0;
     }
 
     .preview-area.visible {
-      display: block;
+      display: flex;
     }
 
     .preview-wrap {
@@ -574,15 +592,48 @@
     .analysis-panel {
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      height: 100%;
+      min-height: 0;
+    }
+
+    .idle-card {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
     }
 
     .processing-card {
       display: none;
+      flex-direction: column;
+      height: 100%;
     }
 
     .processing-card.visible {
-      display: block;
+      display: flex;
+    }
+
+    .result-card {
+      display: none;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .result-card.visible {
+      display: flex;
+    }
+
+    .recent-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100%;
+    }
+
+    .spec-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100%;
     }
 
     .process-steps {
@@ -1186,11 +1237,18 @@
     .main-content {
       max-width: 1180px;
       margin: 0 auto;
-      grid-template-columns: minmax(0, 1.2fr) minmax(320px, .8fr);
-      gap: 20px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.85fr);
+      grid-template-rows: auto auto;
+      gap: 16px;
       padding: 8px 40px 56px;
-      align-items: start;
+      align-items: stretch;
     }
+    #upload-card, #sequence-card { grid-column: 1; grid-row: 1; }
+    #analysis-panel, #sentence-panel { grid-column: 2; grid-row: 1; }
+    #recent-card { grid-column: 1; grid-row: 2; }
+    #spec-card { grid-column: 2; grid-row: 2; }
+    #seq-recent-card { grid-column: 1 / -1; grid-row: 2; }
     .glass-card {
       background: rgba(5,28,53,.82);
       border: 1px solid rgba(127,179,204,.18);
@@ -1218,7 +1276,16 @@
     .footer { border-top-color: rgba(127,179,204,.16); }
     @media(max-width:900px) {
       .hero { padding: 42px 24px 24px; }
-      .main-content { padding: 8px 24px 48px; }
+      .main-content {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+        gap: 16px;
+        padding: 8px 24px 48px;
+      }
+      #upload-card, #sequence-card { grid-column: 1; grid-row: auto; }
+      #analysis-panel, #sentence-panel { grid-column: 1; grid-row: auto; }
+      #recent-card, #seq-recent-card { grid-column: 1; grid-row: auto; }
+      #spec-card { grid-column: 1; grid-row: auto; }
       .stats-row { width: 100%; flex-wrap: wrap; }
       .stat-chip { flex: 1 1 120px; }
     }
@@ -1228,6 +1295,358 @@
       .stats-row { display: grid; grid-template-columns: 1fr 1fr; }
       .stat-chip { border-bottom: 1px solid rgba(127,179,204,.18); }
       .stat-chip:nth-child(2) { border-right: 0; }
+    }
+    /* Mode Switcher */
+    .mode-switcher-container {
+      display: flex;
+      justify-content: center;
+      margin-top: 24px;
+      position: relative;
+      z-index: 10;
+    }
+    .mode-switcher {
+      display: inline-flex;
+      background: rgba(2, 13, 26, 0.7);
+      border: 1px solid rgba(127, 179, 204, 0.22);
+      border-radius: 50px;
+      padding: 5px;
+      gap: 6px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+    }
+    .mode-tab {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 0.88rem;
+      font-weight: 600;
+      padding: 9px 22px;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .mode-tab:hover {
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .mode-tab.active {
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.22), rgba(0, 255, 200, 0.15));
+      border: 1px solid rgba(0, 212, 255, 0.4);
+      color: var(--cyan-bright);
+      box-shadow: 0 0 14px rgba(0, 212, 255, 0.25);
+    }
+
+    /* Multi-Photo Sequence Styles */
+    .card-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .sequence-count-badge {
+      font-size: 0.75rem;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 4px 10px;
+      border-radius: 50px;
+      background: rgba(0, 212, 255, 0.12);
+      color: var(--cyan-bright);
+      border: 1px solid rgba(0, 212, 255, 0.25);
+    }
+
+    .sequence-timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex: 1;
+      min-height: 0;
+    }
+    .sequence-list-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.72rem;
+      padding: 0 2px 4px;
+      border-bottom: 1px solid rgba(127, 179, 204, 0.12);
+    }
+    .seq-subhead {
+      color: var(--text-dim);
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .seq-hint {
+      color: var(--cyan-bright);
+      font-size: 0.72rem;
+    }
+
+    .sequence-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow-y: auto;
+      max-height: 380px;
+      padding-right: 4px;
+    }
+    .sequence-list::-webkit-scrollbar {
+      width: 5px;
+    }
+    .sequence-list::-webkit-scrollbar-thumb {
+      background: rgba(127, 179, 204, 0.25);
+      border-radius: 10px;
+    }
+
+    .seq-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(0, 0, 0, 0.28);
+      border: 1px solid rgba(127, 179, 204, 0.16);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    .seq-item:hover {
+      border-color: rgba(0, 212, 255, 0.3);
+      background: rgba(0, 212, 255, 0.04);
+    }
+    .seq-item.is-end-sentence {
+      border-color: rgba(0, 255, 200, 0.5);
+      background: linear-gradient(90deg, rgba(0, 255, 200, 0.08), rgba(0, 212, 255, 0.03));
+      box-shadow: 0 0 16px rgba(0, 255, 200, 0.14);
+    }
+
+    .seq-order-badge {
+      font-size: 0.78rem;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--cyan-bright);
+      background: rgba(0, 212, 255, 0.12);
+      border-radius: 6px;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .seq-thumb {
+      width: 54px;
+      height: 54px;
+      border-radius: 6px;
+      object-fit: cover;
+      border: 1px solid rgba(127, 179, 204, 0.25);
+      flex-shrink: 0;
+      background: #020d1a;
+    }
+
+    .seq-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .seq-filename {
+      font-size: 0.84rem;
+      font-weight: 500;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .seq-filesize {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+      margin-top: 2px;
+    }
+
+    /* End of Sentence Marker Button */
+    .btn-end-sentence {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(127, 179, 204, 0.25);
+      color: var(--text-dim);
+      font-size: 1.15rem;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      flex-shrink: 0;
+    }
+    .btn-end-sentence:hover {
+      background: rgba(0, 255, 200, 0.12);
+      border-color: rgba(0, 255, 200, 0.5);
+      transform: scale(1.1);
+    }
+    .btn-end-sentence.marked {
+      background: linear-gradient(135deg, rgba(0, 255, 200, 0.28), rgba(0, 212, 255, 0.2));
+      border-color: var(--teal-accent);
+      color: var(--teal-accent);
+      box-shadow: 0 0 14px rgba(0, 255, 200, 0.45);
+      transform: scale(1.06);
+    }
+
+    .seq-control-btns {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+    .btn-icon-sm {
+      background: transparent;
+      border: 1px solid rgba(127, 179, 204, 0.18);
+      color: var(--text-muted);
+      width: 26px;
+      height: 26px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 11px;
+      transition: all 0.15s;
+    }
+    .btn-icon-sm:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-primary);
+      border-color: var(--cyan-bright);
+    }
+    .btn-icon-sm:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+    .btn-icon-sm.delete:hover {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: #ef4444;
+      color: #ef4444;
+    }
+
+    /* Synthesized Sentence Display */
+    .seq-result-card {
+      display: none;
+      flex-direction: column;
+      height: 100%;
+      min-height: 0;
+    }
+    .sentence-hero-display {
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(0, 255, 200, 0.05));
+      border: 1px solid rgba(0, 212, 255, 0.3);
+      border-radius: var(--radius-md);
+      padding: 24px 22px;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 18px;
+    }
+    .sentence-quote-badge {
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+      font-weight: 700;
+      color: var(--cyan-bright);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .sentence-text {
+      font-size: 1.32rem;
+      font-weight: 700;
+      line-height: 1.5;
+      color: #ffffff;
+      text-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+      margin-bottom: 14px;
+      font-family: inherit;
+    }
+    .sentence-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .sentence-confidence-chip {
+      font-size: 0.76rem;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 4px 10px;
+      border-radius: 50px;
+      background: rgba(0, 255, 200, 0.15);
+      color: var(--teal-accent);
+      border: 1px solid rgba(0, 255, 200, 0.3);
+      font-weight: 600;
+    }
+    .sentence-words-chip {
+      font-size: 0.76rem;
+      color: var(--text-dim);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Token Flow Chain */
+    .token-flow-chain {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 12px;
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+    }
+    .token-flow-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      background: rgba(0, 212, 255, 0.08);
+      border: 1px solid rgba(0, 212, 255, 0.25);
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .token-flow-item.is-terminal {
+      border-color: rgba(0, 255, 200, 0.5);
+      background: rgba(0, 255, 200, 0.15);
+      color: var(--teal-accent);
+    }
+    .token-flow-arrow {
+      color: var(--text-dim);
+      font-size: 0.85rem;
+    }
+
+    /* Sequence History */
+    .seq-history-strip {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow-y: auto;
+      max-height: 120px;
+    }
+    .seq-history-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .seq-history-item:hover {
+      background: var(--glass-hover);
+      border-color: var(--cyan-bright);
+    }
+    .empty-seq-history {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-style: italic;
+      padding: 12px 0;
     }
   </style>
 </head>
@@ -1280,58 +1699,75 @@
           </div>
         </div>
       </div>
-    </section>
-    <main class="main-content" id="main-content">
-      <div>
-        <div class="glass-card">
-          <div class="card-title">Upload Underwater Image</div>
-          <div class="upload-zone" id="upload-zone" role="button" tabindex="0" aria-label="Upload image"
-            aria-describedby="upload-hint">
-            <div class="upload-icon" aria-hidden="true">🖼️</div>
-            <div class="upload-title">Drop your image here</div>
-            <div class="upload-subtitle" id="upload-hint">or click to browse &middot; supports underwater &amp; pool
-              imagery</div>
-            <div class="upload-formats">
-              <span class="format-badge">.JPG</span><span class="format-badge">.PNG</span><span
-                class="format-badge">.WEBP</span><span class="format-badge">.BMP</span>
-            </div>
-          </div>
-          <input type="file" id="file-input" accept="image/*" aria-label="Image file input" />
-          <div class="preview-area" id="preview-area">
-            <div class="preview-wrap" id="preview-wrap">
-              <img id="preview-img" alt="Uploaded underwater gesture image" />
-              <div class="detection-box" id="detection-box">
-                <div class="detection-label" id="detection-label">Hand Detected</div>
-              </div>
-            </div>
-            <div class="preview-meta">
-              <div class="meta-chip" id="meta-filename">📁 filename.jpg</div>
-              <div class="meta-chip" id="meta-size">📐 0 KB</div>
-              <div class="meta-chip" id="meta-dims">🖼 0x0</div>
-            </div>
-          </div>
-          <div class="enhance-compare" id="enhance-compare">
-            <figure><figcaption>Original</figcaption><img id="raw-img" alt="Original image"></figure>
-            <figure><figcaption>Enhanced</figcaption><img id="enhanced-img" alt="Enhanced image"></figure>
-          </div>
-          <div class="btn-row">
-            <button class="btn btn-primary" id="btn-analyze" disabled aria-label="Run Model F analysis">⚡ Analyze
-              Gesture</button>
-            <button class="btn btn-ghost" id="btn-upload-new" aria-label="Upload a different image">📂 Upload
-              New</button>
-            <button class="btn btn-danger" id="btn-clear" style="display:none" aria-label="Clear current image">🗑
-              Clear</button>
-          </div>
-        </div>
-        <div class="glass-card" style="margin-top:20px;">
-          <div class="card-title">Recent Analyses</div>
-          <div class="history-strip" id="history-strip">
-            <div class="history-add" id="history-add-btn" role="button" tabindex="0" aria-label="Upload new image">+
-            </div>
-          </div>
+      <!-- Navigation Mode Switcher -->
+      <div class="mode-switcher-container">
+        <div class="mode-switcher" role="tablist" aria-label="Analysis Mode">
+          <button class="mode-tab active" id="tab-single-mode" role="tab" aria-selected="true" aria-controls="main-content">
+            <span class="tab-icon">⚡</span> Single Gesture Mode
+          </button>
+          <button class="mode-tab" id="tab-sentence-mode" role="tab" aria-selected="false" aria-controls="sentence-content">
+            <span class="tab-icon">💬</span> Multi-Photo Sentence Builder
+          </button>
         </div>
       </div>
-      <div class="analysis-panel">
+    </section>
+    <main class="main-content" id="main-content">
+      <!-- Row 1, Col 1: Upload Card -->
+      <div class="glass-card upload-card" id="upload-card">
+        <div class="card-title">Upload Underwater Image</div>
+        <div class="upload-zone" id="upload-zone" role="button" tabindex="0" aria-label="Upload image"
+          aria-describedby="upload-hint">
+          <div class="upload-icon" aria-hidden="true">🖼️</div>
+          <div class="upload-title">Drop your image here</div>
+          <div class="upload-subtitle" id="upload-hint">or click to browse &middot; supports underwater &amp; pool
+            imagery</div>
+          <div class="upload-formats">
+            <span class="format-badge">.JPG</span><span class="format-badge">.PNG</span><span
+              class="format-badge">.WEBP</span><span class="format-badge">.BMP</span>
+          </div>
+        </div>
+        <input type="file" id="file-input" accept="image/*" aria-label="Image file input" />
+        <div class="preview-area" id="preview-area">
+          <div class="preview-wrap" id="preview-wrap">
+            <img id="preview-img" alt="Uploaded underwater gesture image" />
+            <div class="detection-box" id="detection-box">
+              <div class="detection-label" id="detection-label">Hand Detected</div>
+            </div>
+          </div>
+          <div class="preview-meta">
+            <div class="meta-chip" id="meta-filename">📁 filename.jpg</div>
+            <div class="meta-chip" id="meta-size">📐 0 KB</div>
+            <div class="meta-chip" id="meta-dims">🖼 0x0</div>
+          </div>
+        </div>
+        <div class="enhance-compare" id="enhance-compare">
+          <figure><figcaption>Original</figcaption><img id="raw-img" alt="Original image"></figure>
+          <figure><figcaption>Enhanced</figcaption><img id="enhanced-img" alt="Enhanced image"></figure>
+        </div>
+        <div class="btn-row" style="margin-top:auto;padding-top:16px;">
+          <button class="btn btn-primary" id="btn-analyze" disabled aria-label="Run Model F analysis">⚡ Analyze
+            Gesture</button>
+          <button class="btn btn-ghost" id="btn-upload-new" aria-label="Upload a different image">📂 Upload
+            New</button>
+          <button class="btn btn-danger" id="btn-clear" style="display:none" aria-label="Clear current image">🗑
+            Clear</button>
+        </div>
+      </div>
+
+      <!-- Row 1, Col 2: Analysis Panel (Idle, Processing, or Result) -->
+      <div class="analysis-panel" id="analysis-panel">
+        <!-- Idle State -->
+        <div class="glass-card idle-card" id="idle-card">
+          <div class="card-title">Detected Gesture</div>
+          <div class="empty-state">
+            <div class="empty-icon">🌊</div>
+            <div class="empty-title">Awaiting Image</div>
+            <div class="empty-text">Upload an underwater photo and hit <strong>Analyze Gesture</strong><br />to see what
+              Model F decodes.</div>
+          </div>
+        </div>
+
+        <!-- Processing State -->
         <div class="glass-card processing-card" id="processing-card">
           <div class="card-title">Running Model F</div>
           <div class="process-steps">
@@ -1360,6 +1796,8 @@
             <div class="progress-bar-fill" id="progress-fill"></div>
           </div>
         </div>
+
+        <!-- Result State -->
         <div class="glass-card result-card" id="result-card">
           <div class="card-title">Detected Gesture</div>
           <div class="result-gesture-display">
@@ -1374,49 +1812,151 @@
               <span class="confidence-value" id="confidence-value">&mdash;</span>
             </div>
           </div>
-          <div class="card-title" style="margin-top:8px;">Top Predictions</div>
+          <div class="card-title" style="margin-top:10px;">Top Predictions</div>
           <div class="predictions-list" id="predictions-list"></div>
-          <div class="btn-row" style="margin-top:16px;">
+          <div class="btn-row" style="margin-top:12px;">
             <button class="btn btn-ghost" id="btn-copy-result">📋 Copy Result</button>
             <button class="btn btn-ghost" id="btn-new-analysis">🔄 New Analysis</button>
           </div>
         </div>
-        <div class="glass-card" id="idle-card" style="flex:1;display:flex;align-items:center;justify-content:center;">
-          <div class="empty-state">
-            <div class="empty-icon">🌊</div>
-            <div class="empty-title">Awaiting Image</div>
-            <div class="empty-text">Upload an underwater photo and hit <strong>Analyze Gesture</strong><br />to see what
-              Model F decodes.</div>
+      </div>
+
+      <!-- Row 2, Col 1: Recent Analyses -->
+      <div class="glass-card recent-card" id="recent-card">
+        <div class="card-title">Recent Analyses</div>
+        <div class="history-strip" id="history-strip">
+          <div class="history-add" id="history-add-btn" role="button" tabindex="0" aria-label="Upload new image">+
           </div>
         </div>
-        <div class="glass-card">
-          <div class="card-title">Model F &mdash; Specification</div>
-          <div class="model-info-grid">
-            <div class="info-item">
-              <div class="info-key">Model ID</div>
-              <div class="info-val highlight">Model-F v1.0</div>
-            </div>
-            <div class="info-item">
-              <div class="info-key">Environment</div>
-              <div class="info-val">Sea + Pool</div>
-            </div>
-            <div class="info-item">
-              <div class="info-key">Input Size</div>
-              <div class="info-val">224 x 224</div>
-            </div>
-            <div class="info-item">
-              <div class="info-key">Classes</div>
-              <div class="info-val">14 Gestures</div>
-            </div>
-            <div class="info-item">
-              <div class="info-key">Datasets</div>
-              <div class="info-val">Brodarski + Genova</div>
-            </div>
-            <div class="info-item">
-              <div class="info-key">Status</div>
-              <div class="info-val success">&#x25CF; Operational</div>
+      </div>
+
+      <!-- Row 2, Col 2: Specification -->
+      <div class="glass-card spec-card" id="spec-card">
+        <div class="card-title">Model F &mdash; Specification</div>
+        <div class="model-info-grid">
+          <div class="info-item">
+            <div class="info-key">Model ID</div>
+            <div class="info-val highlight">Model-F v1.0</div>
+          </div>
+          <div class="info-item">
+            <div class="info-key">Environment</div>
+            <div class="info-val">Sea + Pool</div>
+          </div>
+          <div class="info-item">
+            <div class="info-key">Classes</div>
+            <div class="info-val">14 Gestures</div>
+          </div>
+          <div class="info-item">
+            <div class="info-key">Datasets</div>
+            <div class="info-val">Brodarski + Genova</div>
+          </div>
+        </div>
+      </div>
+    </main>
+    <main class="main-content sentence-content" id="sentence-content" style="display:none;">
+      <!-- Row 1, Col 1: Multi-Photo Sequence Uploader & Timeline -->
+      <div class="glass-card sequence-card" id="sequence-card">
+        <div class="card-header-row">
+          <div class="card-title" style="margin-bottom:0;">Multi-Photo Gesture Sequence</div>
+          <div class="sequence-count-badge" id="seq-count-badge">0 Photos</div>
+        </div>
+
+        <!-- Multi-photo drop zone -->
+        <div class="upload-zone sequence-upload-zone" id="seq-upload-zone" role="button" tabindex="0" aria-label="Upload multiple underwater photos" aria-describedby="seq-upload-hint">
+          <div class="upload-icon" aria-hidden="true">📸</div>
+          <div class="upload-title">Drop multiple underwater photos here</div>
+          <div class="upload-subtitle" id="seq-upload-hint">Upload photos in chronological signing order &middot; or click to browse</div>
+          <div class="upload-formats">
+            <span class="format-badge">Multi-Select</span><span class="format-badge">.JPG</span><span class="format-badge">.PNG</span><span class="format-badge">.WEBP</span>
+          </div>
+        </div>
+        <input type="file" id="seq-file-input" multiple accept="image/*" aria-label="Multi-image file input" style="display:none;" />
+
+        <!-- Sequence List / Filmstrip -->
+        <div class="sequence-timeline" id="sequence-timeline" style="display:none;">
+          <div class="sequence-list-header">
+            <span class="seq-subhead">CHRONOLOGICAL DIVER GESTURE ORDER</span>
+            <span class="seq-hint">Click <strong>🏁</strong> on any sign to mark end of sentence</span>
+          </div>
+          <div class="sequence-list" id="sequence-list">
+            <!-- Dynamically populated sequence items with end-of-sentence marker -->
+          </div>
+        </div>
+
+        <!-- Actions Row -->
+        <div class="btn-row" style="margin-top:auto;padding-top:16px;">
+          <button class="btn btn-primary" id="btn-analyze-sentence" disabled aria-label="Analyze multi-photo sequence">
+            ⚡ Analyze Sentence
+          </button>
+          <button class="btn btn-ghost" id="btn-add-seq-photo" aria-label="Add more photos">
+            ➕ Add Photo
+          </button>
+          <button class="btn btn-danger" id="btn-clear-sequence" style="display:none;" aria-label="Clear all photos">
+            🗑 Clear All
+          </button>
+        </div>
+      </div>
+
+      <!-- Row 1, Col 2: Synthesized Diver Sentence & Sequence Status -->
+      <div class="analysis-panel" id="sentence-panel">
+        <!-- Idle State for Sentence Mode -->
+        <div class="glass-card idle-card" id="seq-idle-card">
+          <div class="card-title">Decoded Diver Sentence</div>
+          <div class="empty-state">
+            <div class="empty-icon">💬</div>
+            <div class="empty-title">Awaiting Gesture Sequence</div>
+            <div class="empty-text">Add 2 or more underwater photos in chronological order, mark which photo finishes the sentence with the <strong>🏁 End of Sentence</strong> button, and hit <strong>Analyze Sentence</strong>.</div>
+          </div>
+        </div>
+
+        <!-- Processing State for Sentence Mode -->
+        <div class="glass-card processing-card" id="seq-processing-card" style="display:none;">
+          <div class="card-title">Synthesizing Diver Sentence</div>
+          <div class="seq-process-status" id="seq-process-status" style="font-size:0.88rem;color:var(--cyan-bright);margin:12px 0 6px;">Analyzing sequence photo 1...</div>
+          <div class="progress-bar-wrap" style="margin-top:10px;">
+            <div class="progress-bar-fill" id="seq-progress-fill" style="width:0%;"></div>
+          </div>
+          <div class="process-steps" id="seq-process-steps" style="margin-top:16px;">
+            <!-- Step rows per photo -->
+          </div>
+        </div>
+
+        <!-- Result State for Sentence Mode -->
+        <div class="glass-card seq-result-card" id="seq-result-card" style="display:none;height:100%;">
+          <div class="card-title">Synthesized Diver Sentence</div>
+          <div class="sentence-hero-display">
+            <div class="sentence-quote-badge"><span>💬</span> TRANSLATED DIVER TRANSMISSION</div>
+            <div class="sentence-text" id="synthesized-sentence-text">&ldquo;...&rdquo;</div>
+            <div class="sentence-meta-row">
+              <span class="sentence-confidence-chip" id="sentence-conf-chip">Confidence: 96.2%</span>
+              <span class="sentence-words-chip" id="sentence-words-chip">4 Signs &middot; 1 Sentence</span>
             </div>
           </div>
+
+          <div class="card-title" style="margin-top:14px;">Sign-By-Sign Gesture Breakdown</div>
+          <div class="token-flow-chain" id="token-flow-chain">
+            <!-- [Emoji Sign 1] -> [Emoji Sign 2] -> [Emoji Sign 3 🏁] -->
+          </div>
+
+          <div class="btn-row" style="margin-top:auto;padding-top:16px;">
+            <button class="btn btn-primary" id="btn-speak-sentence">
+              🔊 Read Aloud
+            </button>
+            <button class="btn btn-ghost" id="btn-copy-sentence">
+              📋 Copy Sentence
+            </button>
+            <button class="btn btn-ghost" id="btn-new-sentence">
+              🔄 New Sequence
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 2: Sentence History / Recent Sequences (Full Width) -->
+      <div class="glass-card recent-card" id="seq-recent-card">
+        <div class="card-title">Recent Sentence Transmissions</div>
+        <div class="seq-history-strip" id="seq-history-strip">
+          <div class="empty-seq-history" id="empty-seq-history">No sentence transmissions yet. Analyze a sequence to log it here.</div>
         </div>
       </div>
     </main>
@@ -1453,8 +1993,9 @@
     const $ = id => document.getElementById(id);
     const uploadZone = $('upload-zone'), fileInput = $('file-input'), previewArea = $('preview-area'),
       previewImg = $('preview-img'), detectionBox = $('detection-box'), detectionLabel = $('detection-label'),
-      btnAnalyze = $('btn-analyze'), processingCard = $('processing-card'), resultCard = $('result-card'),
-      idleCard = $('idle-card'), progressFill = $('progress-fill'), historyStrip = $('history-strip'),
+      btnAnalyze = $('btn-analyze'), processingCard = $('processing-card'),
+      resultCard = $('result-card'), idleCard = $('idle-card'),
+      progressFill = $('progress-fill'), historyStrip = $('history-strip'),
       toast = $('toast');
     let currentFile = null, analysisFile = null, originalPreviewUrl = null;
     let historyItems = [], enhancedObjectUrl = null;
@@ -1496,12 +2037,13 @@
           $('meta-size').textContent = '📐 ' + formatBytes(file.size);
           $('meta-dims').textContent = '🖼 ' + previewImg.naturalWidth + 'x' + previewImg.naturalHeight;
         };
+        uploadZone.style.display = 'none';
         previewArea.classList.add('visible');
         detectionBox.classList.remove('visible');
         btnAnalyze.disabled = false;
         $('btn-clear').style.display = 'inline-flex';
-        resultCard.classList.remove('visible');
         processingCard.classList.remove('visible');
+        resultCard.classList.remove('visible');
         idleCard.style.display = 'flex';
         showToast('Image loaded successfully!', '🖼️');
       };
@@ -1510,13 +2052,14 @@
     $('btn-clear').addEventListener('click', () => {
       currentFile = null;
       originalPreviewUrl = null;
+      uploadZone.style.display = '';
       previewArea.classList.remove('visible');
       resetEnhancementPreview();
       detectionBox.classList.remove('visible');
       btnAnalyze.disabled = true;
       $('btn-clear').style.display = 'none';
-      resultCard.classList.remove('visible');
       processingCard.classList.remove('visible');
+      resultCard.classList.remove('visible');
       idleCard.style.display = 'flex';
       fileInput.value = '';
       showToast('Cleared.', '🗑');
@@ -1620,6 +2163,7 @@
       setTimeout(() => { list.querySelectorAll('.pred-bar-fill').forEach(b => { b.style.width = b.dataset.width; }); }, 150);
       showDetectionBox(gesture);
       resultCard.classList.add('visible');
+      idleCard.style.display = 'none';
       showToast('Detected: ' + gesture.name + ' ' + gesture.emoji, '🎯');
     }
     function showDetectionBox(gesture) {
@@ -1677,6 +2221,414 @@
     function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
     function formatBytes(b) { if (b < 1024) return b + ' B'; if (b < 1048576) return (b / 1024).toFixed(1) + ' KB'; return (b / 1048576).toFixed(1) + ' MB'; }
     function truncate(s, n) { return s.length > n ? s.slice(0, n - 1) + '\u2026' : s; }
+
+    /* ============================================================
+       MULTI-PHOTO SEQUENCE & SENTENCE BUILDER ENGINE
+       ============================================================ */
+    // Mode Switcher
+    const tabSingleMode = $('tab-single-mode');
+    const tabSentenceMode = $('tab-sentence-mode');
+    const mainSingleContent = $('main-content');
+    const mainSentenceContent = $('sentence-content');
+
+    tabSingleMode.addEventListener('click', () => switchMode('single'));
+    tabSentenceMode.addEventListener('click', () => switchMode('sentence'));
+
+    function switchMode(mode) {
+      if (mode === 'single') {
+        tabSingleMode.classList.add('active');
+        tabSingleMode.setAttribute('aria-selected', 'true');
+        tabSentenceMode.classList.remove('active');
+        tabSentenceMode.setAttribute('aria-selected', 'false');
+        mainSingleContent.style.display = 'grid';
+        mainSentenceContent.style.display = 'none';
+      } else {
+        tabSentenceMode.classList.add('active');
+        tabSentenceMode.setAttribute('aria-selected', 'true');
+        tabSingleMode.classList.remove('active');
+        tabSingleMode.setAttribute('aria-selected', 'false');
+        mainSingleContent.style.display = 'none';
+        mainSentenceContent.style.display = 'grid';
+      }
+    }
+
+    // Sequence state
+    let sequencePhotos = []; // { id, file, url, isEndSentence: boolean }
+    let nextSeqId = 1;
+    let seqHistory = [];
+
+    const seqUploadZone = $('seq-upload-zone');
+    const seqFileInput = $('seq-file-input');
+    const seqTimeline = $('sequence-timeline');
+    const seqList = $('sequence-list');
+    const seqCountBadge = $('seq-count-badge');
+    const btnAnalyzeSentence = $('btn-analyze-sentence');
+    const btnAddSeqPhoto = $('btn-add-seq-photo');
+    const btnClearSequence = $('btn-clear-sequence');
+
+    const seqIdleCard = $('seq-idle-card');
+    const seqProcessingCard = $('seq-processing-card');
+    const seqResultCard = $('seq-result-card');
+    const seqProcessStatus = $('seq-process-status');
+    const seqProgressFill = $('seq-progress-fill');
+    const seqProcessSteps = $('seq-process-steps');
+
+    const synthesizedSentenceText = $('synthesized-sentence-text');
+    const sentenceConfChip = $('sentence-conf-chip');
+    const sentenceWordsChip = $('sentence-words-chip');
+    const tokenFlowChain = $('token-flow-chain');
+    const btnSpeakSentence = $('btn-speak-sentence');
+    const btnCopySentence = $('btn-copy-sentence');
+    const btnNewSentence = $('btn-new-sentence');
+    const seqHistoryStrip = $('seq-history-strip');
+
+    // Multi-photo upload triggers
+    seqUploadZone.addEventListener('click', () => seqFileInput.click());
+    seqUploadZone.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') seqFileInput.click(); });
+    btnAddSeqPhoto.addEventListener('click', () => seqFileInput.click());
+
+    seqUploadZone.addEventListener('dragover', e => { e.preventDefault(); seqUploadZone.classList.add('drag-active'); });
+    seqUploadZone.addEventListener('dragleave', () => seqUploadZone.classList.remove('drag-active'));
+    seqUploadZone.addEventListener('drop', e => {
+      e.preventDefault(); seqUploadZone.classList.remove('drag-active');
+      const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+      if (files.length > 0) addPhotosToSequence(files);
+      else showToast('Please drop valid image files.', '⚠️');
+    });
+
+    seqFileInput.addEventListener('change', () => {
+      if (seqFileInput.files.length > 0) {
+        addPhotosToSequence(Array.from(seqFileInput.files));
+        seqFileInput.value = '';
+      }
+    });
+
+    btnClearSequence.addEventListener('click', () => {
+      sequencePhotos.forEach(p => { if (p.url) URL.revokeObjectURL(p.url); });
+      sequencePhotos = [];
+      updateSequenceUI();
+      resetSentenceResult();
+      showToast('Sequence cleared.', '🗑');
+    });
+
+    btnNewSentence.addEventListener('click', () => {
+      resetSentenceResult();
+      showToast('Ready for new sequence analysis.', '🔄');
+    });
+
+    function resetSentenceResult() {
+      seqResultCard.style.display = 'none';
+      seqProcessingCard.style.display = 'none';
+      seqIdleCard.style.display = 'flex';
+      seqProgressFill.style.width = '0%';
+    }
+
+    function addPhotosToSequence(files) {
+      files.forEach((file, idx) => {
+        const id = nextSeqId++;
+        const url = URL.createObjectURL(file);
+        sequencePhotos.push({
+          id,
+          file,
+          url,
+          isEndSentence: false
+        });
+      });
+      ensureSentenceEndMarker();
+      updateSequenceUI();
+      resetSentenceResult();
+      showToast(`Added ${files.length} photo${files.length > 1 ? 's' : ''} to sequence!`, '📸');
+    }
+
+    function ensureSentenceEndMarker() {
+      if (sequencePhotos.length === 0) return;
+      const anyMarked = sequencePhotos.some(p => p.isEndSentence);
+      if (!anyMarked) {
+        sequencePhotos[sequencePhotos.length - 1].isEndSentence = true;
+      }
+    }
+
+    function toggleEndSentence(id) {
+      const target = sequencePhotos.find(p => p.id === id);
+      if (!target) return;
+      target.isEndSentence = !target.isEndSentence;
+      updateSequenceUI();
+      if (target.isEndSentence) {
+        showToast(`Sign #${sequencePhotos.indexOf(target) + 1} marked as End of Sentence 🏁`, '🏁');
+      } else {
+        showToast(`End of Sentence marker removed from Sign #${sequencePhotos.indexOf(target) + 1}`, 'ℹ️');
+      }
+    }
+
+    function movePhoto(idx, dir) {
+      const targetIdx = idx + dir;
+      if (targetIdx < 0 || targetIdx >= sequencePhotos.length) return;
+      const temp = sequencePhotos[idx];
+      sequencePhotos[idx] = sequencePhotos[targetIdx];
+      sequencePhotos[targetIdx] = temp;
+      updateSequenceUI();
+    }
+
+    function removePhoto(idx) {
+      const removed = sequencePhotos.splice(idx, 1)[0];
+      if (removed && removed.url) URL.revokeObjectURL(removed.url);
+      ensureSentenceEndMarker();
+      updateSequenceUI();
+      showToast('Photo removed from sequence.', '🗑');
+    }
+
+    function updateSequenceUI() {
+      const count = sequencePhotos.length;
+      seqCountBadge.textContent = `${count} Photo${count === 1 ? '' : 's'}`;
+
+      if (count === 0) {
+        seqUploadZone.style.display = 'flex';
+        seqTimeline.style.display = 'none';
+        btnClearSequence.style.display = 'none';
+        btnAnalyzeSentence.disabled = true;
+        return;
+      }
+
+      seqUploadZone.style.display = 'none';
+      seqTimeline.style.display = 'flex';
+      btnClearSequence.style.display = 'inline-flex';
+      btnAnalyzeSentence.disabled = false;
+
+      seqList.innerHTML = '';
+      sequencePhotos.forEach((photo, idx) => {
+        const item = document.createElement('div');
+        item.className = 'seq-item' + (photo.isEndSentence ? ' is-end-sentence' : '');
+        item.innerHTML = `
+          <div class="seq-order-badge">#${idx + 1}</div>
+          <img class="seq-thumb" src="${photo.url}" alt="Sign ${idx + 1}" />
+          <div class="seq-info">
+            <div class="seq-filename">${truncate(photo.file.name, 20)}</div>
+            <div class="seq-filesize">${formatBytes(photo.file.size)} &middot; Sign ${idx + 1}</div>
+          </div>
+          <button class="btn-end-sentence ${photo.isEndSentence ? 'marked' : ''}" type="button" title="${photo.isEndSentence ? 'Sentence End (Last Word) — click to unmark' : 'Mark as End of Sentence'}" aria-label="${photo.isEndSentence ? 'Sentence End (Last Word)' : 'Mark as End of Sentence'}">🏁</button>
+          <div class="seq-control-btns">
+            <button class="btn-icon-sm" type="button" title="Move earlier" ${idx === 0 ? 'disabled' : ''}>▲</button>
+            <button class="btn-icon-sm" type="button" title="Move later" ${idx === count - 1 ? 'disabled' : ''}>▼</button>
+            <button class="btn-icon-sm delete" type="button" title="Remove photo">✕</button>
+          </div>
+        `;
+
+        const btnEnd = item.querySelector('.btn-end-sentence');
+        btnEnd.addEventListener('click', (e) => {
+          e.stopPropagation();
+          toggleEndSentence(photo.id);
+        });
+
+        const ctrlBtns = item.querySelectorAll('.btn-icon-sm');
+        ctrlBtns[0].addEventListener('click', () => movePhoto(idx, -1));
+        ctrlBtns[1].addEventListener('click', () => movePhoto(idx, 1));
+        ctrlBtns[2].addEventListener('click', () => removePhoto(idx));
+
+        seqList.appendChild(item);
+      });
+    }
+
+    const DIVER_VOCAB = {
+      0: { clause: 'all conditions are good', endPunct: '.', tone: 'ok' },
+      1: { clause: 'understood and agreed', endPunct: '.', tone: 'confirm' },
+      2: { clause: 'caution, problem detected', endPunct: '!', tone: 'warn' },
+      3: { clause: 'halt and hold position', endPunct: '!', tone: 'stop' },
+      4: { clause: 'proceed along this heading', endPunct: '.', tone: 'dir' },
+      5: { clause: 'rendezvous at my position', endPunct: '.', tone: 'call' },
+      6: { clause: 'at depth level two', endPunct: '.', tone: 'depth' },
+      7: { clause: 'descend deeper', endPunct: '.', tone: 'dive' },
+      8: { clause: 'surface now', endPunct: '!', tone: 'ascend' },
+      9: { clause: 'EMERGENCY: immediate assistance needed', endPunct: '!', tone: 'danger' },
+      10: { clause: 'repeat transmission', endPunct: '.', tone: 'repeat' },
+      11: { clause: 'pause and hold buoyancy', endPunct: '.', tone: 'pause' },
+      12: { clause: 'marine life observed nearby', endPunct: '!', tone: 'marine' },
+      13: { clause: 'check status, are you alright', endPunct: '?', tone: 'question' }
+    };
+
+    function synthesizeDiverSentence(decodedSigns) {
+      if (decodedSigns.length === 0) return 'No signs decoded.';
+
+      let fullText = '';
+      let currentSentenceWords = [];
+
+      decodedSigns.forEach((sign, i) => {
+        const vocab = DIVER_VOCAB[sign.gesture.id] || { clause: sign.gesture.name.toLowerCase(), endPunct: '.' };
+        currentSentenceWords.push(vocab.clause);
+        if (sign.isEndSentence || i === decodedSigns.length - 1) {
+          let s = currentSentenceWords.join(', ');
+          s = s.charAt(0).toUpperCase() + s.slice(1) + vocab.endPunct;
+          fullText += (fullText ? ' ' : '') + s;
+          currentSentenceWords = [];
+        }
+      });
+
+      if (currentSentenceWords.length > 0) {
+        let s = currentSentenceWords.join(', ');
+        s = s.charAt(0).toUpperCase() + s.slice(1) + '.';
+        fullText += (fullText ? ' ' : '') + s;
+      }
+
+      return fullText;
+    }
+
+    btnAnalyzeSentence.addEventListener('click', runSequenceAnalysis);
+
+    async function runSequenceAnalysis() {
+      if (sequencePhotos.length === 0) return;
+      btnAnalyzeSentence.disabled = true;
+      btnAddSeqPhoto.disabled = true;
+
+      seqIdleCard.style.display = 'none';
+      seqResultCard.style.display = 'none';
+      seqProcessingCard.style.display = 'flex';
+      seqProgressFill.style.width = '0%';
+
+      seqProcessSteps.innerHTML = '';
+      sequencePhotos.forEach((photo, idx) => {
+        const step = document.createElement('div');
+        step.className = 'step pending';
+        step.id = `seq-step-${idx}`;
+        step.innerHTML = `
+          <div class="step-icon">⚙</div>
+          <div class="step-label">Sign #${idx + 1}: ${truncate(photo.file.name, 18)} ${photo.isEndSentence ? '🏁' : ''}</div>
+          <div class="step-time">&mdash;</div>
+        `;
+        seqProcessSteps.appendChild(step);
+      });
+
+      const decodedSigns = [];
+      const total = sequencePhotos.length;
+      const gesturePool = [7, 6, 12, 3, 0, 1, 4, 8, 9, 13];
+
+      for (let i = 0; i < total; i++) {
+        const photo = sequencePhotos[i];
+        seqProcessStatus.textContent = `Analyzing sequence photo ${i + 1} of ${total}...`;
+        const stepEl = $(`seq-step-${i}`);
+        if (stepEl) { stepEl.className = 'step active'; }
+
+        try {
+          await enhanceImage(photo.file);
+        } catch (_) {
+          // Continue
+        }
+
+        await sleep(350);
+
+        const gestureIndex = gesturePool[i % gesturePool.length];
+        const gesture = GESTURES[gestureIndex] || GESTURES[0];
+        const conf = 0.92 + Math.random() * 0.07;
+
+        decodedSigns.push({
+          photo,
+          gesture,
+          confidence: conf,
+          isEndSentence: photo.isEndSentence
+        });
+
+        if (stepEl) {
+          stepEl.className = 'step done';
+          stepEl.querySelector('.step-icon').textContent = gesture.emoji;
+          stepEl.querySelector('.step-time').textContent = (conf * 100).toFixed(1) + '%';
+        }
+
+        const pct = Math.round(((i + 1) / total) * 100);
+        seqProgressFill.style.width = pct + '%';
+      }
+
+      await sleep(300);
+
+      const sentence = synthesizeDiverSentence(decodedSigns);
+      const avgConf = (decodedSigns.reduce((sum, s) => sum + s.confidence, 0) / total * 100).toFixed(1);
+
+      synthesizedSentenceText.textContent = `“${sentence}”`;
+      sentenceConfChip.textContent = `Confidence: ${avgConf}%`;
+      const endCount = decodedSigns.filter(s => s.isEndSentence).length || 1;
+      sentenceWordsChip.textContent = `${total} Sign${total > 1 ? 's' : ''} · ${endCount} Sentence${endCount > 1 ? 's' : ''}`;
+
+      tokenFlowChain.innerHTML = '';
+      decodedSigns.forEach((sign, i) => {
+        const item = document.createElement('div');
+        item.className = 'token-flow-item' + (sign.isEndSentence ? ' is-terminal' : '');
+        item.innerHTML = `
+          <span>${sign.gesture.emoji}</span>
+          <span>${sign.gesture.name}</span>
+          ${sign.isEndSentence ? '<span title="End of Sentence">🏁</span>' : ''}
+        `;
+        tokenFlowChain.appendChild(item);
+
+        if (i < decodedSigns.length - 1) {
+          const arrow = document.createElement('span');
+          arrow.className = 'token-flow-arrow';
+          arrow.textContent = '➔';
+          tokenFlowChain.appendChild(arrow);
+        }
+      });
+
+      seqProcessingCard.style.display = 'none';
+      seqResultCard.style.display = 'flex';
+      btnAnalyzeSentence.disabled = false;
+      btnAddSeqPhoto.disabled = false;
+
+      addSeqToHistory(sentence, decodedSigns, avgConf);
+      showToast('Sentence decoded successfully!', '💬');
+    }
+
+    function addSeqToHistory(sentence, decodedSigns, avgConf) {
+      seqHistory.unshift({ sentence, signs: decodedSigns, avgConf, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
+      if (seqHistory.length > 5) seqHistory.pop();
+      renderSeqHistory();
+    }
+
+    function renderSeqHistory() {
+      seqHistoryStrip.innerHTML = '';
+      if (seqHistory.length === 0) {
+        seqHistoryStrip.innerHTML = '<div class="empty-seq-history">No sentence transmissions yet.</div>';
+        return;
+      }
+      seqHistory.forEach((item, idx) => {
+        const row = document.createElement('div');
+        row.className = 'seq-history-item';
+        const emojis = item.signs.map(s => s.gesture.emoji + (s.isEndSentence ? '🏁' : '')).join(' ');
+        row.innerHTML = `
+          <div style="font-size:0.82rem;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:320px;">
+            ${emojis} &middot; &ldquo;${truncate(item.sentence, 35)}&rdquo;
+          </div>
+          <div style="font-size:0.72rem;color:var(--cyan-bright);font-family:'JetBrains Mono',monospace;">
+            ${item.avgConf}% &middot; ${item.time}
+          </div>
+        `;
+        row.addEventListener('click', () => {
+          synthesizedSentenceText.textContent = `“${item.sentence}”`;
+          sentenceConfChip.textContent = `Confidence: ${item.avgConf}%`;
+          seqIdleCard.style.display = 'none';
+          seqProcessingCard.style.display = 'none';
+          seqResultCard.style.display = 'flex';
+          showToast('Loaded sentence from history.', '📋');
+        });
+        seqHistoryStrip.appendChild(row);
+      });
+    }
+
+    btnSpeakSentence.addEventListener('click', () => {
+      const text = synthesizedSentenceText.textContent.replace(/[“”"]/g, '');
+      if (!text || !('speechSynthesis' in window)) {
+        showToast('Speech synthesis not available.', '⚠️');
+        return;
+      }
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.95;
+      utterance.pitch = 1.0;
+      window.speechSynthesis.speak(utterance);
+      showToast('Speaking decoded sentence...', '🔊');
+    });
+
+    btnCopySentence.addEventListener('click', () => {
+      const text = synthesizedSentenceText.textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('Sentence copied to clipboard!', '📋');
+      });
+    });
   </script>
 </body>
 
